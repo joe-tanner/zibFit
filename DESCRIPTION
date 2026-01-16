@@ -1,16 +1,14 @@
-Package: zibFit
 Type: Package
-Title: What the Package Does (Title Case)
+Package: zibFit
+Title: Simulates And Fits Zero-Inflated Beta Regression Models For
+    Longitudinal Microbiome Composition Data
 Version: 0.1.0
-Authors@R: c(
-    person(
-      "Jane", "Doe",
-      email = "jane@example.com",
-      role = c("aut", "cre")
-    )
-  )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
-License: What license is it under?
+Authors@R: 
+    person("Joe", "Tanner", , "joe.tanner.2026@mumail.ie", role = c("aut", "cre"))
+Description: Simulates data from zero-inflated beta regression, which can
+    then be plotted. Fits zero-inflated beta regression models to real
+    world data, including a data preparation function for ease of use.
+License: GPL (>= 3)
+URL: https://github.com/joe-tanner/zibFit
 Encoding: UTF-8
 LazyData: true

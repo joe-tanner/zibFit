@@ -8,27 +8,28 @@ The goal of zibFit is to make it easier to model with zero-inflated beta regress
 
 ## Introduction
 
-The Zero-Inflated Beta Regression (ZIBR) model, as proposed by Eric Z. Chen and Hongzhe Li in 2016, is a proposed solution for modelling longitudinal microbiome compositional data. This data tends to be highly skewed, is bounded between [0, 1) and is often sparse, with many zeroes. Additionally, observations from repeated measurements are correlated. The ZIBR model proposes a two part zero-inflated beta regression model with random effects for testing the association between microbial abundance and clinical covariates for longitudinal microbiome data. The model includes a logistic component to model presence/absence of the microbe in samples and a Beta component to model non-zero microbial abundance and each component includes a random effect to take into account the correlation among repeated measurements on the same subject.
+The Zero-Inflated Beta Regression (ZIBR) model, as proposed by Eric Z. Chen and Hongzhe Li in 2016, is a proposed solution for modelling longitudinal microbiome compositional data. This data tends to be highly skewed, is bounded between [0, 1) and is often sparse, with many zeroes. Additionally, observations from repeated measurements are correlated. The ZIBR model proposes a two part zero-inflated beta regression model with random effects for testing the association between microbial abundance and clinical covariates for longitudinal microbiome data. The model includes a logistic component to model presence/absence of the microbe in samples and a Beta component to model non-zero microbial abundance. Both components include a random effect to take into account the correlation among repeated measurements on the same subject.
 
 ## Statistical Model
+
 The details of the statistical model are as follows:
 
-ZIBR assumes $y_{it}$, the relative abundance of bacterial taxon in individual $i$ at time $t$, for $1 \leq i \leq N, 1 \leq t \leq{T_i}$, follows the following distribution; $$
-\begin{align*}
+ZIBR assumes $y_{it}$, the relative abundance of bacterial taxon in individual $i$ at time $t$, for $1 \leq i \leq N, 1 \leq t \leq{T_i}$, follows the following distribution; 
+$\begin{align*}
     y_{it} \sim 
     \begin{cases}
         0 & \text{with probability }1-p_{it}\\
         Beta(\mu_{it}\phi, (1-\mu_{it})\phi) & \text{with probability }p_{it}
     \end{cases}
-\end{align*}
-$$ Where $\phi > 0$ and $0 < \mu_{it}, p_{it} < 1$.
- 
+\end{align*}$
+Where $\phi > 0$ and $0 < \mu_{it}, p_{it} < 1$.
+
 Accordingly, we can test three biologically relevant null hypotheses:\
 - H0: α_j = 0. This is to test the coefficients in the logistic component, if the covariates are associated with the bacterial taxon by affecting its presence or absence;\
 - H0: β_j = 0. This is to test the coefficients in the Beta component, if the taxon is associated with the covariates by showing different abundances;\
 - H0: α_j = 0 and β_j = 0 for each covariate X_j and Z_j. This is to joinly test the coefficients in both logistic and Beta components, if the covariates affect the taxon both in terms of presence/absence and its non-zero abundance.
 
-The zibFit package features 4 functions to assist in modelling longitudinal microbiome composition data; zibSim (to simulate data), zibPlot (plot method for plotting relative abundance), zibClean (to aid in data cleaning prior to implementing the zibFitter function) and zibFitter (which fits the ZIBR model to a microbiome dataset). 
+The zibFit package features 4 functions to assist in modelling longitudinal microbiome composition data; zibSim (to simulate data), zibPlot (plot method for plotting relative abundance), zibClean (to aid in data cleaning prior to implementing the zibFitter function) and zibFitter (which fits the ZIBR model to a microbiome dataset).
 
 ## Installation
 
@@ -76,7 +77,6 @@ zibData = zibClean(data = ra, metadata = covariates, log_covs = c("subject", "ti
 
 # results list now includes p-values for all estimates, as well as lists of each bacteria with statistically significant treatment, subject, time and baseline abundance effects
 results <- zibFitter(zibData)
-
 
 
 ```
