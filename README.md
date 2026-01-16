@@ -74,6 +74,7 @@ sample_id <- rep(1:3000)
 covariates <- data.frame(subject = y1$subject_ind, time = y1$time_ind, treat = y1$covariates$X, sample = sample_id)
 
 zibData = zibClean(data = ra, metadata = covariates, log_covs = c("subject", "time", "treat"), id_column = "sample", subject_column = "subject", time_column = "time")
+# if working on a real world problem, just use zibClean with your relative abundance and metadata files in the correct format!
 
 # results list now includes p-values for all estimates, as well as lists of each bacteria with statistically significant treatment, subject, time and baseline abundance effects
 results <- zibFitter(zibData)

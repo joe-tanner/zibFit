@@ -1,5 +1,36 @@
-# method for plot() that plots the distribution
+#' Visualise a zero-inflated beta regression model for simulated data
+#'
+#' Plots a simulated zero-inflated beta regression dataset of class
+#' \code{"zibSim"}, separately displaying the zero abundance in the dataset and
+#' fitting a beta regression model to the distribution of the non-zero data,
+#' which is displayed on a histogram.
+#'
+#' @param x An object of class \code{"zibSim"}.
+#' @param microbe_name Name of simulated microbe to title the plot; "Microbe" by
+#' default.
+#' @param ... Catches unused arguments to \code{plot} (not currently
+#' implemented).
+#'
+#' @importFrom MASS "fitdistr"
+#'
+#' @seealso \code{\link{plot}}, \code{\link{zibSim}}
+#'
+#' @examples
+#' n = 1000
+#' t = 3
+#' X <- as.matrix(c(rep(0, n/2 * t), rep(1, n/2 * t)))
+#'
+#' y1 <- zibSim(n = n, t = t, a = 0.5, b = 0.8, sigma1 = 2.5, sigma2 = 0.5,
+#' phi = 7.2, alpha = 0.5, beta = -0.5, X = X, Z = X, seed = 6874)
+#'
+#' plot(y1, microbe_name = "Simulated Data")
+#'
 
+plot <- function(x, microbe_name = "Microbe", ...) {
+  UseMethod("plot")
+}
+
+#' @export
 plot.zibSim <- function(x, microbe_name = "Microbe", ...) {
 
   # get the data
@@ -30,5 +61,3 @@ plot.zibSim <- function(x, microbe_name = "Microbe", ...) {
   legend("topright", legend = leg.txt, text.col = leg.col, bty = "n")
 
 }
-
-
