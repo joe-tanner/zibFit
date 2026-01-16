@@ -6,16 +6,19 @@ zibClean <- function(data, metadata, log_covs, beta_covs = log_covs, id_column,
   # rownames of the data should equal the id values in the 'id_column' in metadata
 
   # data doesn't need to be the same size as the metadata, function will sort that
-  # size of beta and log covs shoudln't matter either
+  # size of beta and log covs shouldn't matter either
+  # data must be between 0 and 1
 
   if(!is.data.frame(metadata)) stop("metadata must be a dataframe")
+  if(length(colnames(data)) == 0) stop("data requires column names of the different species in each column")
+  if(length(rownames(data)) == 0) stop("data requires row names of the sample id's for each row")
 
+  covs <- unique(c(log_covs, beta_covs))
+  options <- colnames(metadata)
   if(!time_column %in% options) stop("time_column not found in metadata")
   if(!subject_column %in% options) stop("subject_column not found in metadata")
   if(!id_column %in% options) stop("id_column not found in metadata")
 
-  covs <- unique(c(log_covs, beta_covs))
-  options <- colnames(metadata)
   missing <- covs[!covs %in% c(options)]
   if(length(missing > 0)) stop("some selected covariates cannot be found in the metadata dataset")
 
@@ -23,7 +26,7 @@ zibClean <- function(data, metadata, log_covs, beta_covs = log_covs, id_column,
   sample_id <- rownames(data)
 
   sample_id <- sample_id[which(sample_id %in% metadata[[id_column]])]
-  if(length(sample_id) == 0) stop("no sample ids from data match sample ids in metadata")
+  if(length(sample_id) == 0) stop("zero sample ids from data match the sample ids in metadata")
   data <- data[sample_id, ]
 
   # convert time if not numeric
@@ -62,9 +65,10 @@ zibClean <- function(data, metadata, log_covs, beta_covs = log_covs, id_column,
   rownames(reg.cov) <- reg.cov$sample_id
 
   # take out the baseline sample
-  reg.cov.t1 <- subset(reg.cov, Time == 0)
+  t0 <- min(metadata$Time)
+  reg.cov.t1 <- subset(reg.cov, Time == t0)
   reg.cov.t1 <- reg.cov.t1[c("sample_id", subject_column)]
-  reg.cov.t <- subset(reg.cov, Time != 0)
+  reg.cov.t <- subset(reg.cov, Time != t0)
   sample_id <- reg.cov.t$sample_id
 
   all_cov <- merge(reg.cov.t, reg.cov.t1, by = subject_column)
@@ -74,12 +78,14 @@ zibClean <- function(data, metadata, log_covs, beta_covs = log_covs, id_column,
   rownames(all_cov) <- sample_id
   all_cov <- all_cov[ , -which(names(all_cov) == id_column)]
 
+  colnames(all_cov)[which(colnames(all_cov) == "Time")] <- time_column
+
   # separate into log and beta covariates
   log_cov <- all_cov[c(log_covs, "baseline_sample")]
   beta_cov <- all_cov[c(beta_covs, "baseline_sample")]
 
   # update indices without baseline abundances
-  time_ind <- as.numeric(all_cov$Time)
+  time_ind <- as.numeric(all_cov[[time_column]])
   sample_ind <- all_cov[[id_column]]
   subject_ind <- as.numeric(all_cov[[subject_column]])
 

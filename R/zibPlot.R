@@ -3,7 +3,7 @@
 plot.zibSim <- function(x, microbe_name = "Microbe", ...) {
 
   # get the data
-  df <- x$y
+  df <- x$rel_abundance
 
   # create the plot
   # par(new = TRUE)
@@ -14,11 +14,11 @@ plot.zibSim <- function(x, microbe_name = "Microbe", ...) {
 
   zero_prop <- mean(df == 0)
   par(mar = c(5, 4, 4, 5) + 0.1)
+  par(col.axis = "blue", col.lab = "blue")
   hist(df, freq = FALSE, xlim = c(0, 1), breaks = breaks,
        main = microbe_name, xlab = "Abundance", ylab = "Density")
   curve(dbeta(x, fit$estimate["shape1"], fit$estimate["shape2"]),
         col = "blue", lwd = 2, add = TRUE)
-  par(col.axis = "blue", col.lab = "blue")
   par(new = TRUE, col.axis = "red")
   plot(0, 0, type = "n", axes = FALSE, xlab = "", ylab = "",
        xlim = range(df), ylim = c(0, 1))

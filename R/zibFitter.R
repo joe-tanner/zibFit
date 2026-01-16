@@ -1,4 +1,4 @@
-zibrFitter <- function(zibData) {
+zibFitter <- function(zibData) {
 
   if(!inherits(zibData, "zibData")) stop("This function only works on objects of class \"zibData\"")
 
@@ -15,7 +15,7 @@ zibrFitter <- function(zibData) {
     Z <- data$beta_covariates
 
     # include baseline abundance
-    baseline_abundance <- data$rel_abundance[X$baseline_sample, spe]/100
+    baseline_abundance <- data$rel_abundance[X$baseline_sample, spe]
     X <- cbind(X, baseline_abundance)[ , -which(names(X) == "baseline_sample")]
     Z <- cbind(Z, baseline_abundance)[ , -which(names(Z) == "baseline_sample")]
 
@@ -23,8 +23,7 @@ zibrFitter <- function(zibData) {
     time.ind <- data$time_ind
     sample.ind <- data$sample_ind
 
-
-    Y <- data$rel_abundance[sample.ind, spe]/100 # check that log and beta must have same indices
+    Y <- data$rel_abundance[sample.ind, spe] # check that log and beta must have same indices
 
     print(spe)
 

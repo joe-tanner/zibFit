@@ -25,12 +25,17 @@ zibSim <- function(n, t, a, b, sigma1, sigma2, phi, alpha, beta, X, Z, seed = NU
   if(length(sigma1) != 1 | length(sigma2) != 1) stop("sigma 1, 2 must be integers of length 1")
   if(!is.numeric(sigma1)) stop("sigma 1 must be an integer of length 1")
   if(!is.numeric(sigma2)) stop("sigma 2 must be an integer of length 1")
+  if(sigma1 < 0) stop("sigma 1 must be strictly greater than 0")
+  if(sigma2 < 0) stop("sigma 2 must be strictly greater than 0")
 
   if(length(phi) != 1) stop("phi must be an integer of length 1")
   if(!is.numeric(phi)) stop("phi must be an integer of length 1")
 
   if(length(alpha) != ncol(X)) stop("alpha must have the same number of integers as X has columns")
   if(length(beta) != ncol(Z)) stop("beta must have the same number of integers as Z has columns")
+
+  if(n*t != nrow(X)) stop("covariate X must be the same length as the total number of observations (n*t)")
+  if(n*t != nrow(Z)) stop("covariate Z must be the same length as the total number of observations (n*t)")
 
   if(is.null(seed)) seed = round(a*b*n*t*phi, 0)
 
@@ -67,12 +72,19 @@ zibSim <- function(n, t, a, b, sigma1, sigma2, phi, alpha, beta, X, Z, seed = NU
 
   subject_ind = rep(1:n, each = t)
   time_ind = rep(1:t, n)
+  sample_ind = rep(1:(n*t))
   parameters = list(a = a, b = b, sigma1 = sigma1, sigma2 = sigma2, phi = phi,
                     alpha = alpha, beta = beta)
-  covariates = list(X = X, Z = Z)
+  log_covariates = data.frame(X)
+  beta_covariates = data.frame(Z)
 
-  l <- list(y = results, theta = parameters, subject_ind = subject_ind,
-            time_ind = time_ind, covariates = covariates)
+  l <- list(rel_abundance = results,
+            log_covariates = log_covariates,
+            beta_covariates = beta_covariates,
+            subject_ind = subject_ind,
+            time_ind = time_ind,
+            sample_ind = sample_ind,
+            theta = parameters)
 
   class(l) <- c("zibSim", "listof")
 
