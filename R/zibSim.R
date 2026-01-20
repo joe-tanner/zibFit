@@ -32,7 +32,6 @@
 #'
 #' @returns An object of class \code{"zibSim"}, which is a list containing the
 #' following items;
-#' \itemize{
 #'  \item{\code{rel_abundance}: }{Simulated data from the zero-inflated beta regression
 #'  model, using the given parameters}
 #'  \item{\code{log_covariates}: }{Covariate matrix X used to simulate the data
@@ -43,7 +42,6 @@
 #'  \item{\code{time_ind}: }{Ordered index of time points for each data point}
 #'  \item{\code{sample_ind}: }{Ordered index of sample ID's}
 #'  \item{\code{theta}: }{Named list of all parameters used in the simualtions}
-#' }
 #'
 #' @note A dedicated \code{\link{plot}} function is provided for objects of class \code{"zibSim"}.
 #'
@@ -59,7 +57,7 @@
 #' y1 <- zibSim(n = n, t = t, a = 0.5, b = 0.8, sigma1 = 2.5, sigma2 = 0.5,
 #' phi = 7.2, alpha = 0.5, beta = -0.5, X = X, Z = X, seed = 6874)
 #'
-#' y2 <- zibSim(n = n, t = t, a = 0.1, b = 0.9, sigma1 = -3.2, sigma2 = 2.1,
+#' y2 <- zibSim(n = n, t = t, a = 0.1, b = 0.9, sigma1 = 3.2, sigma2 = 2.1,
 #' phi = 3.2, alpha = -0.5, beta = -0.5, X = X, Z = X, seed = 6874)
 #'
 #'
@@ -111,8 +109,8 @@ zibSim <- function(n, t, a, b, sigma1, sigma2, phi,
   results = rep(0, times = n)
 
   # sample random effects from normal distributions
-  sample_a <- rnorm(n = n, mean = a, sd = sqrt(sigma1))
-  sample_b <- rnorm(n = n, mean = b, sd = sqrt(sigma2))
+  sample_a <- stats::rnorm(n = n, mean = a, sd = sqrt(sigma1))
+  sample_b <- stats::rnorm(n = n, mean = b, sd = sqrt(sigma2))
 
   for(i in 1:n) {
     for(j in 1:t) {
@@ -121,9 +119,9 @@ zibSim <- function(n, t, a, b, sigma1, sigma2, phi,
       inv_logit <- function(x) exp(x)/(1 + exp(x))
       p = inv_logit(sample_a[i] + (X[m, ]%*%alpha))
 
-      if(runif(1) < p) {
+      if(stats::runif(1) < p) {
         u = inv_logit(sample_b[i] + (Z[m,]%*%beta))
-        y = rbeta(n = 1, shape1 = u*phi, shape2 = (1-u)*phi)
+        y = stats::rbeta(n = 1, shape1 = u*phi, shape2 = (1-u)*phi)
       } else {
         y = 0
       }

@@ -46,7 +46,7 @@ This is a basic example which shows you how to solve a common problem:
 
 ``` r
 library(zibFit)
-## simulate zibr data and plot
+# simulate zibr data and plot
 
 # initialise covariate matrix, simulating a clinical study where half recieve the treatment (1) and half do not (0)
 n = 1000
@@ -65,13 +65,13 @@ y3 <- zibSim(n = n, t = t, a = 0.2, b = 0.3, sigma1 = 3, sigma2 = 2, phi = 4, al
 y4 <- zibSim(n = n, t = t, a = 0.1, b = 0.9, sigma1 = 0.4, sigma2 = 0.5, phi = 8.1, alpha = 0.5, beta = 0.5, X = X, Z = X, seed = 6874)
 y5 <- zibSim(n = n, t = t, a = 0.2, b = 1, sigma1 = 2, sigma2 = 0.5, phi = 3.4, alpha = -0.5, beta = 0.5, X = X, Z = X, seed = 6874)
 
-ra <- cbind(y1$y, y2$y, y3$y, y4$y, y5$y)
+ra <- cbind(y1$rel_abundance, y2$rel_abundance, y3$rel_abundance, y4$rel_abundance, y5$rel_abundance)
 rownames(ra) <- rep(1:3000) # rownames and column names are required
 colnames(ra) <- rep(1:5)
 
 # create covariate data frame
 sample_id <- rep(1:3000)
-covariates <- data.frame(subject = y1$subject_ind, time = y1$time_ind, treat = y1$covariates$X, sample = sample_id)
+covariates <- data.frame(subject = y1$subject_ind, time = y1$time_ind, treat = y1$log_covariates$X, sample = sample_id)
 
 zibData = zibClean(data = ra, metadata = covariates, log_covs = c("subject", "time", "treat"), id_column = "sample", subject_column = "subject", time_column = "time")
 # if working on a real world problem, just use zibClean with your relative abundance and metadata files in the correct format!

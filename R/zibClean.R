@@ -29,7 +29,6 @@
 #'
 #' @returns An object of class \code{"zibData"}, which is a list containing the
 #' following items;
-#' \itemize{
 #'  \item{\code{rel_abundance}: }{Relative abundance of each species for each sample,
 #'  of class \code{data.frame}.}.
 #'  \item{\code{log_covariates}: }{Covariate matrix X used to simulate the data
@@ -40,43 +39,53 @@
 #'  \item{\code{subject_ind}: }{Ordered index of subject ID's.}
 #'  \item{\code{time_ind}: }{Ordered index of time points for each data point.}
 #'  \item{\code{sample_ind}: }{Ordered index of sample ID's.}
-#' }
 #'
 #' @export
 #' @seealso \code{zibFitter}, \code{zibSim}
 #'
 #' @examples
 #' library(zibFit)
-#' simulate zibr data and plot
+#' # simulate zibr data and plot
 #'
-#' initialise covariate matrix, simulating a clinical study where half recieve the treatment (1) and half do not (0)
+#' # initialise covariate matrix, simulating a clinical study where half recieve
+#' # the treatment (1) and half do not (0)
 #' n = 1000
 #' t = 3
 #' X <- as.matrix(c(rep(0, n/2 * t), rep(1, n/2 * t)))
 #'
-#' y1 <- zibSim(n = n, t = t, a = 0.5, b = 0.8, sigma1 = 2.5, sigma2 = 0.5, phi = 7.2, alpha = 0.5, beta = -0.5, X = X, Z = X, seed = 6874)
+#' y1 <- zibSim(n = n, t = t, a = 0.5, b = 0.8, sigma1 = 2.5, sigma2 = 0.5,
+#' phi = 7.2, alpha = 0.5, beta = -0.5, X = X, Z = X, seed = 6874)
 #'
 #' # fit a zibr model to longitudinal microbiome composition data
-#' simulate five different microbiomes
-#' y2 <- zibSim(n = n, t = t, a = 0.5, b = -0.5, sigma1 = 0.8, sigma2 = 1.2, phi = 5, alpha = -0.5, beta = -0.5, X = X, Z = X, seed = 6874)
-#' y3 <- zibSim(n = n, t = t, a = 0.2, b = 0.3, sigma1 = 3, sigma2 = 2, phi = 4, alpha = -0.5, beta = -0.5, X = X, Z = X, seed = 6874)
-#' y4 <- zibSim(n = n, t = t, a = 0.1, b = 0.9, sigma1 = 0.4, sigma2 = 0.5, phi = 8.1, alpha = 0.5, beta = 0.5, X = X, Z = X, seed = 6874)
-#' y5 <- zibSim(n = n, t = t, a = 0.2, b = 1, sigma1 = 2, sigma2 = 0.5, phi = 3.4, alpha = -0.5, beta = 0.5, X = X, Z = X, seed = 6874)
+#' # simulate five different microbiomes
+#' y2 <- zibSim(n = n, t = t, a = 0.5, b = -0.5, sigma1 = 0.8, sigma2 = 1.2,
+#' phi = 5, alpha = -0.5, beta = -0.5, X = X, Z = X, seed = 6874)
+#' y3 <- zibSim(n = n, t = t, a = 0.2, b = 0.3, sigma1 = 3, sigma2 = 2,
+#' phi = 4, alpha = -0.5, beta = -0.5, X = X, Z = X, seed = 6874)
+#' y4 <- zibSim(n = n, t = t, a = 0.1, b = 0.9, sigma1 = 0.4, sigma2 = 0.5,
+#' phi = 8.1, alpha = 0.5, beta = 0.5, X = X, Z = X, seed = 6874)
+#' y5 <- zibSim(n = n, t = t, a = 0.2, b = 1, sigma1 = 2, sigma2 = 0.5,
+#' phi = 3.4, alpha = -0.5, beta = 0.5, X = X, Z = X, seed = 6874)
 #'
-#' ra <- cbind(y1$y, y2$y, y3$y, y4$y, y5$y)
+#' ra <- cbind(y1$rel_abundance, y2$rel_abundance, y3$rel_abundance,
+#' y4$rel_abundance, y5$rel_abundance)
 #' rownames(ra) <- rep(1:3000) # rownames and column names are required
 #' colnames(ra) <- rep(1:5)
 #'
-#' create covariate data frame
+#' # create covariate data frame
 #' sample_id <- rep(1:3000)
-#' covariates <- data.frame(subject = y1$subject_ind, time = y1$time_ind, treat = y1$covariates$X, sample = sample_id)
+#' covariates <- data.frame(subject = y1$subject_ind, time = y1$time_ind,
+#' treat = y1$log_covariates$X, sample = sample_id)
 #'
-#' zibData = zibClean(data = ra, metadata = covariates, log_covs = c("subject", "time", "treat"), id_column = "sample", subject_column = "subject", time_column = "time")
+#' zibData = zibClean(data = ra,
+#' metadata = covariates,
+#' log_covs = c("subject", "time", "treat"),
+#' id_column = "sample",
+#' subject_column = "subject",
+#' time_column = "time")
 #'
 zibClean <- function(data, metadata, log_covs, beta_covs = log_covs, id_column,
                      subject_column, time_column) {
-
-
 
   # id, subject and time are the names of the metadata columns in ""
   # log,beta are string vectors with the names of the metadata columns holding the covs
