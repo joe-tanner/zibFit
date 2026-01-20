@@ -48,7 +48,7 @@ following items;
  \item{\code{subject_ind}: }{Ordered index of subject ID's}
  \item{\code{time_ind}: }{Ordered index of time points for each data point}
  \item{\code{sample_ind}: }{Ordered index of sample ID's}
- \item{\code{theta}: }{Named list of all parameters used in the simualtions}
+ \item{\code{theta}: }{Named list of all parameters used in the simulations}
 }
 \description{
 Simulates data from a zero-inflated beta regression model, in accordance with

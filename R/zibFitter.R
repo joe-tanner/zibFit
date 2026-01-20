@@ -10,7 +10,7 @@
 #' component to model presence/absence of the microbe in samples, and a Beta
 #' component to model non-zero microbial abundance. Both components include
 #' random effects to take into account the correlation among repeated
-#' measurements on the same subject. Details on the model are as follows;
+#' measurements on the same subject. Basic details on the model are as follows;
 #' \deqn{
 #' y_{it} \sim
 #' \begin{cases}
@@ -22,6 +22,7 @@
 #' a list of each microbe with statistically significant (p-value < 0.05)
 #' estimates for each covariate included in the model. See
 #' \code{\link{zibClean}} for more information on \code{"zibData"} objects.
+#' This function requires a minimum of two different microbes to use it.
 #'
 #' @param zibData An object of class \code{"zibData"}, as returned from the
 #' \code{\link{zibClean}} function.

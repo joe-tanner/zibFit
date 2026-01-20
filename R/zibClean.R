@@ -69,7 +69,7 @@
 #'
 #' ra <- cbind(y1$rel_abundance, y2$rel_abundance, y3$rel_abundance,
 #' y4$rel_abundance, y5$rel_abundance)
-#' rownames(ra) <- rep(1:3000) # rownames and column names are required
+#' rownames(ra) <- rep(1:3000) # row names and column names are required
 #' colnames(ra) <- rep(1:5)
 #'
 #' # create covariate data frame

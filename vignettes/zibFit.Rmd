@@ -1,0 +1,237 @@
+---
+title: "zibFit"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{zibFit}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: references.bib
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo = FALSE}
+library(zibFit)
+```
+
+## Introduction
+
+**zibFit** is a package designed to assist with the modelling of longitudinal microbiome composition data using the Zero-Inflated Beta Regression (ZIBR) model [@Chen2016]. This type of data is usually highly skewed, is quite sparse with a large number of zeroes and is bounded between [0, 1), making it difficult to model. The ZIBR model proposes a two-part zero-inflated beta regression model with random effect, including a logistic component to model presence/absence of the microbe in samples and a Beta component to model non-zero microbial abundance. Both components include random effects to take into account the correlation amongst repeated measurements on the same subject.
+
+The model is defined as follows;
+
+ZIBR assumes $y_{it}$, the relative abundance of bacterial taxon in individual $i$ at time $t$, for $1 \leq i \leq N, 1 \leq t \leq{T_i}$, follows the following distribution;
+
+$\begin{align*}
+    y_{it} \sim
+    \begin{cases}
+        0 & \text{with probability }1-p_{it}\\
+        Beta(\mu_{it}\phi, (1-\mu_{it})\phi) & \text{with probability }p_{it}
+    \end{cases}
+\end{align*}$
+
+Where $\phi > 0$ and $0 < \mu_{it}, p_{it} < 1$.
+
+These two components are characterised by the logit link functions;
+
+$$
+    \log\!\left(\frac{p_{it}}{1 - p_{it}}\right)
+      = a_i + \mathbf{x}_{it}^\top \boldsymbol{\alpha}
+$$
+
+$$
+    \log\!\left(\frac{\mu_{it}}{1 - \mu_{it}}\right)
+      = b_i + \mathbf{z}_{it}^\top \boldsymbol{\beta}
+$$ where $\bf{x}_{it}$ and $\bf{z}_{it}$ are covariates for each individual and time point, and $a_i$ and $b_i$ are individual-specific intercepts. We assume that each of the random intercepts follows a normal distribution, independently from each other.
+
+$$
+a_i \sim N\left(a, \sigma_1^2\right)
+$$
+
+$$
+b_i \sim N \left(b, \sigma_2^2\right)
+$$
+
+The **ZIBR** package [@ZIBR] allows researchers to utilise this model to test for associations between microbial abundance and clinical covariates for longitudinal microbiome data. **zibFit** aims to improve on this further, making it easier again to model with the data, as well as including a visualisation tool for simulated data to better understand the underlying distributions you are dealing with when working with longitudinal microbiome composition data.
+
+**zibFit** includes 4 main functions, including one method, to ease the burden for new researchers looking to work with longitudinal microbiome composition data. The functions included are as follows;
+
+1.  'zibSim', a function to simualted ZIBR data,
+
+2.  A 'plot' method for visualising 'zibSim' data,
+
+3.  'zibClean' to prepare large datasets for modelling (outputting a 'zibData' object) and lastly,
+
+4.  'zibFitter' to model 'zibData' objects using the ZIBR model and return statistically significant results.
+
+These functions can be used sequentially to explore how the ZIBR model can be used, or 'zibClean' and 'zibFitter' can be applied to real-world data to make it significantly quicker and easier to fit the ZIBR model. This vignette aims to take you through the different use cases for the package, guiding you through common issues throughout.
+
+### Installation
+
+**zibFit** will run in Windows, Mac OS X, or Linux. To install it, you first need to install [R](https://cran.r-project.org/). Installing [RStudio](https://www.rstudio.com/) as a nice desktop environment for using R is also suggested.
+
+Once in R you can type at the R command prompt:
+
+```{r, eval=FALSE}
+install.packages('devtools')
+devtools::install_github('joe-tanner/zibFit')
+```
+
+to install the latest development version of the package from the **zibFit** [GitHub page](https://github.com/joe-tanner/zibFit.git).
+
+You can then type the below to load in all 4 of the **zibFit** functions.
+
+```{r, eval=FALSE}
+library(zibFit)
+```
+
+Some features may not yet be fully tested, and occasionally this version might be liable to break when it is in the process of being updated. If you find bugs or want to suggest new features please visit the [GitHub issues page](https://github.com/joe-tanner/zibFit/issues).
+
+## 'zibSim()'
+
+This function allows users to simulated data from the aforementioned ZIBR model. It takes 11 different inputs;
+
+-   n: Number of samples to simulate
+
+-   t: Number of time points to simulate for each sample
+
+-   a: Mean value for the random effect (logistic part)
+
+-   b: Mean value for the random effect (beta part)
+
+-   sigma1: Random effect variance (logistic part); must be a positive integer
+
+-   sigma2: Random effect variance (Beta part); must be a positive integer
+
+-   phi: Dispersion parameter
+
+-   alpha: Regression coeffiecients (logistic part) must be the same length as the number of columns in covariate X
+
+-   beta: Regression coeffiecients (Beta part); must be the same length as the number of columns in covariate Z
+
+-   X: Covariate matrix (logistic part); must be the same length as the total number of observations $n*t$
+
+-   Z: Covariate matrix (Beta part); must be the same length as the total number of observations $n*t$; by default, this is set to the same as X
+
+-   seed: Simulation seed to be used
+
+It is important to make sure that the X and Z covariate matrices have the sample number of rows as the total number of observations; each row should mimic one sample. Covariate matrices may include as many columns as required - just ensure that the number of columns in each matrix is equivalent to the number of entries in the alpha/beta vectors. The following example mimics data from a clinical trial in which we only have one covariate, which can be interpreted as 0 = no treatment, and 1 = treatment.
+
+```{r}
+n = 1000 # 1000 samples
+t = 3 # three time points - a total of 3000 observations
+
+X <- as.matrix(c(rep(0, n/2 * t), rep(1, n/2 * t))) # half have treatment equal to 0, half equal to 1
+
+y1 <- zibSim(n = n, t = t, a = 0.5, b = 0.8, sigma1 = 2.5, sigma2 = 0.5, 
+             phi = 7.2, alpha = 0.5, beta = -0.5, X = X, Z = X, seed = 6874)
+
+names(y1)
+```
+
+The function returns a 'zibSim' object, including all information required to fit the data using the 'zibFitter' function in the future and information regarding the inputs, in case the user wants to compare fitted results to actual parameters. 'zibSim' objects are lists including the following outputs;
+
+-   rel_abundance: A vector of the simulated data from the ZIBR model, using the user-specified inputs
+
+-   log_covariates: Covariate matrix X used to simulate the data
+
+-   beta_covariates: Covariate matrix Z used to simulate the data
+
+-   subject_ind: Vector of subject ID's, in the same order as the 'rel_abundance' vector
+
+-   time_ind: Vector detailing which time point each entry in the 'rel_abundance' vector is from
+
+-   sample_ind: Vector detailing which sample each entry in the 'rel_abundance' vector is from
+
+-   theta: Named list of all parameters used in the simulations
+
+## 'plot()'
+
+A dedicated `plot()` method is provided for objects returned by `zibSim()`. This method plots the distribution of the non-zero relative abundances, while also returning the proportion of zeroes in the data on a separate axis. The non-zero entries are fitted using a basic beta-regression model, in order to give the viewer an idea of how well the ZIBR model could fit the data. The method only takes one additional input, the 'microbe_name', which can be used to title the graph.
+
+```{r}
+plot(y1, microbe_name = "Simulated Microbe")
+```
+
+## 'zibClean()'
+
+'zibClean()' was developed in an effort to minimise the data manipulation and preprocessing required by researchers when working with the ZIBR model on large datasets. The function takes two main data sets as inputs; 'data', which includes all of the relative abundances for each microbe (columns) for each observation (rows), and 'metadata', which provides information on the covariates for each observation. The row names of 'data' must match a specified 'id_column' in the metadata, and the column names of 'data' must be the microbe names. The user specifies which column names in 'metadata' are equivalent to to the 'log_covs' (covariates for the log part of the model), 'beta_covs' (covariates for the beta part of the model), the 'subject_column' (which subject each observation is from) and the 'time_column' (which time point each observation was recorded at), and the function tidies the data up in order to return a 'zibData' object ready for modelling with using the 'zibFitter' function.
+
+'zibClean' can be used with the 'zibSim' function to replicate a microbiome data frame, suitable for modelling with the ZIBR model, as seen in the example below.
+
+```{r}
+# fit a zibr model to longitudinal microbiome composition data
+# simulate five different microbiomes
+y2 <- zibSim(n = n, t = t, a = 0.5, b = -0.5, sigma1 = 0.8, sigma2 = 1.2,
+phi = 5, alpha = -0.5, beta = -0.5, X = X, Z = X, seed = 6874)
+y3 <- zibSim(n = n, t = t, a = 0.2, b = 0.3, sigma1 = 3, sigma2 = 2,
+phi = 4, alpha = -0.5, beta = -0.5, X = X, Z = X, seed = 6874)
+y4 <- zibSim(n = n, t = t, a = 0.1, b = 0.9, sigma1 = 0.4, sigma2 = 0.5,
+phi = 8.1, alpha = 0.5, beta = 0.5, X = X, Z = X, seed = 6874)
+y5 <- zibSim(n = n, t = t, a = 0.2, b = 1, sigma1 = 2, sigma2 = 0.5,
+phi = 3.4, alpha = -0.5, beta = 0.5, X = X, Z = X, seed = 6874)
+
+ra <- cbind(y1$rel_abundance, y2$rel_abundance, y3$rel_abundance,
+y4$rel_abundance, y5$rel_abundance)
+rownames(ra) <- rep(1:3000) # row names and column names are required
+colnames(ra) <- rep(1:5)
+
+# create covariate data frame
+sample_id <- rep(1:3000)
+covariates <- data.frame(subject = y1$subject_ind, time = y1$time_ind,
+                         treat = y1$log_covariates$X, sample = sample_id)
+
+zibData = zibClean(data = ra,
+                   metadata = covariates,
+                   log_covs = c("subject", "time", "treat"),
+                   id_column = "sample",
+                   subject_column = "subject",
+                   time_column = "time")
+
+names(zibData)
+```
+
+Alternatively, it can be used on real world data, such as the 'ibd' data set, included in the 'ZIBR' package [@Lewis2015]. 
+
+```{r}
+library(ZIBR)
+head(ibd)
+
+ra <- data.frame(Abundance1 = ibd$Abundance, Abundance2 = ibd$Abundance)
+rownames(ra) <- ibd$Sample # must have row names equal to id_column in metadata
+
+meta <- subset(ibd, select = c(Sample, Subject, Time, Treatment)) # already have relative abundance in ra
+
+zibData1 <- zibClean(data = ra, 
+                    metadata = meta, 
+                    log_covs = c("Subject", "Time", "Treatment"), 
+                    beta_covs = c("Subject", "Time", "Treatment"), 
+                    id_column = "Sample", 
+                    subject_column = "Subject", 
+                    time_column = "Time"
+                    )
+names(zibData1)
+```
+
+The sample above might not appear the useful as the 'ibd' data set is already quite tidy, however it can be extremely useful when working with real life data sets, which are significantly bigger (much more than just two microbes) and could have significantly more observations and covariates. This example deliberately copies the one relative abundance into two separate columns as the 'zibFitter()' function requires a minimum of two different microbes to work. 
+
+## 'zibFitter()'
+
+'zibFitter()' is the final function of the package, aiming to make it significantly easier to fit ZIBR models to longitudinal microbiome composition data, having already put them into the 'zibData' format. This function is essentially a wrapper for the 'ZIBR::zibr()' function, making it suitable to run on more than one microbe at a time, outputting only the p-values for estimates derived from the 'ZIBR::zibr()' function for each of the covariates, along with lists of the microbes detected to have statistically significantly changes in their relative abundance across the study associated to different covariates. The model only takes one input, a 'zibData' object. The 'zibFitter()' function requires a minimum of 2 microbes (two columns in the relative abundance data set) for it to work. Examples can be seen below. 
+
+```{r}
+results <- zibFitter(zibData)
+results
+```
+
+```{r}
+results1 <- zibFitter(zibData1)
+results1
+```
+
+
